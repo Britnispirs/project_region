@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+  .artist-page {
+    background: linear-gradient(135deg, #e7ffe7, #d2ffd9);
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  }
+
+  .artist-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 25px;
+  }
+
+  .artist-photo {
+    width: 140px;
+    height: 140px;
+    border-radius: 20px;
+    object-fit: cover;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+  }
+
+  .artist-info h2 {
+    margin: 0;
+    font-size: 28px;
+  }
+
+  .card {
+    background: white;
+    padding: 20px;
+    border-radius: 18px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.10);
+    margin-top: 25px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    background: white;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.10);
+  }
+
+  th, td {
+    padding: 14px 18px;
+    border-bottom: 1px solid #e8e8e8;
+  }
+
+  th {
+    background: #dbffd8;
+    font-weight: bold;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  .btn-delete {
+    color: red;
+    text-decoration: none;
+    font-weight: bold;
+  }
+
+  .back-link {
+    display: inline-block;
+    margin-bottom: 15px;
+    color: #2e8f5e;
+    font-weight: bold;
+  }
+
+  button {
+    background: #33b46e;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 10px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+
+  button:hover {
+    background: #2a9d63;
+  }
+</style>
+
+<a href="{{ url_for('artists_list') }}" class="back-link">← К артистам</a>
+
+<div class="artist-page">
+
+  <div class="artist-header">
+    {% if artist.photo %}
+      <img src="{{ url_for('static', filename='uploads/' ~ artist.photo) }}" class="artist-photo">
+    {% else %}
+      <img src="{{ url_for('static', filename='default_artist.jpg') }}" class="artist-photo">
+    {% endif %}
+
+    <div class="artist-info">
+      <h2>{{ artist.name }}</h2>
+      <p><strong>Страна:</strong> {{ artist.country or "—" }}</p>
+      <p><strong>Биография:</strong> {{ artist.bio or "Нет информации" }}</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Добавить альбом</h3>
+    <form action="{{ url_for('add_album') }}" method="post">
+      <input type="hidden" name="artist_id" value="{{ artist.id }}">
+      <input name="title" placeholder="Название альбома" required>
+      <input name="year" placeholder="Год">
+      <input name="tracks_count" placeholder="Количество треков">
+      
+      <select name="genre_id">
+        <option value="">(Жанр)</option>
+        {% for g in get_genres() %}
+          <option value="{{ g.id }}">{{ g.name }}</option>
+        {% endfor %}
+      </select>
+
+      <button type="submit">Добавить</button>
+    </form>
+  </div>
+
+  <h3 style="margin-top: 25px;">Альбомы</h3>
+  {% if albums %}
+    <table>
+      <tr>
+        <th>Название</th>
+        <th>Год</th>
+        <th>Треков</th>
+        <th>Действия</th>
+      </tr>
+      {% for al in albums %}
+      <tr>
+        <td>{{ al.title }}</td>
+        <td>{{ al.year or "" }}</td>
+        <td>{{ al.tracks_count or 0 }}</td>
+        <td>
+          <a href="{{ url_for('album_page', album_id=al.id) }}">Открыть</a>
+          |
+          <form action="{{ url_for('delete_album', album_id=al.id) }}" method="POST" style="display:inline;">
+            <button type="submit" onclick="return confirm('Удалить альбом?')">Удалить</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+  {% else %}
+    <p>Альбомов пока нет.</p>
+  {% endif %}
+
+</div>
+
+{% endblock %}

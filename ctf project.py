@@ -45,23 +45,22 @@ class WebScanner:
         return False
 
     def scan_sql_injection(self, url):
-            payload = "'"
-            print(f"[*] Проверка на SQLi: {url}")
-            if not url.endswith('/'):
-                target = url + '/' + payload
-            else:
-                target = url + payload
-            try:
-                res = self.session.get(target, verify=False, timeout=5)
-                errors = ["sql syntax", "mysql_fetch", "near '\"'"]
-                
-                for err in errors:
-                    if err in res.text.lower():
-                        print(f"[!!!] Найдена ошибка SQL: {target}")
-                        return True
-            except:
-                print("[-] Ошибка подключения")
-            return False
+        sql_payload = "'"
+        print(f"[*] Проверка параметров URL на SQLi: {url}")
+        target = f"{url}{sql_payload}"
+        res = self.session.get(target, verify=False, timeout=5)
+        errors = [
+            "you have an error in your sql syntax",
+            "warning: mysql_fetch_array()",
+            "unclosed quotation mark after the character string",
+            "quoted string not properly terminated"
+        ]
+        
+        for error in errors:
+            if error.lower() in res.text.lower():
+                print(f"[!!!] Потенциальная SQL-инъекция найдена: {target}")
+                return True
+        return False
 
 if __name__ == "__main__":
     print("---  ---")

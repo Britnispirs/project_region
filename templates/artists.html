@@ -1,0 +1,505 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+  :root{
+    --bg-grad-start: #ecfdf3;
+    --bg-grad-end: #e6fff0;
+    --card-bg: rgba(255,255,255,0.85);
+    --accent: #36b37e;
+    --accent-dark: #2a8a63;
+    --muted: #6b7280;
+  }
+
+  .page {
+    min-height: 100vh;
+    padding: 40px 20px;
+    background: linear-gradient(180deg, var(--bg-grad-start), var(--bg-grad-end));
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    color: #0f172a;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .header {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    margin-bottom:18px;
+  }
+
+  h1.title {
+    font-size: 1.6rem;
+    margin: 0;
+    color: var(--accent-dark);
+  }
+
+  .card {
+    background: var(--card-bg);
+    border-radius: 14px;
+    box-shadow: 0 6px 20px rgba(10, 15, 20, 0.06);
+    padding: 18px;
+    margin-bottom: 18px;
+    overflow: hidden;
+    border: 1px solid rgba(34,197,94,0.06);
+  }
+
+  form.row {
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+
+  form.row input[type="text"],
+  form.row input[type="file"],
+  form.row textarea,
+  form.row select {
+    background: white;
+    border: 1px solid #e6eef0;
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    outline: none;
+  }
+
+  form.row input[type="text"]:focus,
+  form.row textarea:focus {
+    box-shadow: 0 0 0 4px rgba(54,179,126,0.08);
+    border-color: var(--accent);
+  }
+
+  button.btn {
+    background: linear-gradient(90deg, var(--accent), var(--accent-dark));
+    color: white;
+    border: none;
+    padding: 10px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    box-shadow: 0 6px 18px rgba(54,179,126,0.12);
+  }
+
+  .artists-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+  }
+
+  .artists-table th, .artists-table td {
+    padding: 12px 10px;
+    text-align: left;
+    border-bottom: 1px solid rgba(15,23,42,0.04);
+    vertical-align: middle;
+  }
+
+  .artists-table th {
+    font-size: 0.9rem;
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  .artist-row {
+    transition: background .15s ease;
+  }
+  .artist-row:hover { background: rgba(34,197,94,0.03); }
+
+  .artist-photo {
+    width:56px;
+    height:56px;
+    border-radius: 10px;
+    overflow:hidden;
+    display:inline-block;
+    background: linear-gradient(135deg, rgba(0,0,0,0.05), rgba(0,0,0,0.02));
+    margin-right:10px;
+  }
+
+  .artist-photo img {
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+  }
+
+  .actions a, .actions form { display:inline-block; margin-left:8px; }
+  .actions a.link {
+    color: var(--accent-dark);
+    text-decoration:none;
+    font-weight:600;
+  }
+  .actions form button.delete {
+    background: transparent;
+    color: #ef4444;
+    border: none;
+    cursor: pointer;
+    padding:6px 8px;
+    border-radius:8px;
+  }
+
+  /* Стили для фильтров */
+  .filters-container {
+    display: flex;
+    gap: 20px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+  }
+
+  .filter-group {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .filter-label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.9rem;
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  .filter-select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e6eef0;
+    border-radius: 10px;
+    background: white;
+    font-size: 0.95rem;
+    cursor: pointer;
+  }
+
+  .filter-select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(54,179,126,0.1);
+  }
+
+  .filter-badge {
+    display: inline-block;
+    background: var(--accent);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 0.85rem;
+    margin: 0 5px 5px 0;
+  }
+
+  .active-filters {
+    margin-top: 15px;
+    padding: 12px;
+    background: rgba(54,179,126,0.08);
+    border-radius: 10px;
+    border-left: 4px solid var(--accent);
+  }
+
+  .reset-btn {
+    background: #f3f4f6;
+    color: #666;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+
+  .reset-btn:hover {
+    background: #e5e7eb;
+  }
+
+  .sort-icon {
+    display: inline-block;
+    margin-left: 5px;
+    font-size: 0.8rem;
+  }
+
+  .quick-filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+  }
+
+  .quick-filter-btn {
+    padding: 6px 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    color: #475569;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .quick-filter-btn:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+  }
+
+  .quick-filter-btn.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+
+  .results-count {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-left: 10px;
+  }
+
+  @media (max-width:760px){
+    form.row { flex-direction: column; align-items: stretch; }
+    .header { flex-direction: column; align-items: flex-start; gap:8px; }
+    .artist-photo { width:46px; height:46px; }
+    .filters-container { flex-direction: column; gap: 15px; }
+    .filter-group { min-width: 100%; }
+  }
+</style>
+
+<div class="page">
+  <div class="container">
+    <div class="header">
+      <h1 class="title">Каталог исполнителей</h1>
+      <div style="color:var(--muted); font-size:0.95rem;">
+        Добавь артиста — загрузи фото, напиши биографию и управляй альбомами.
+      </div>
+    </div>
+
+    <!-- Добавление артиста -->
+    <div class="card">
+      <form class="row" action="{{ url_for('add_artist') }}" method="post" enctype="multipart/form-data">
+        <input name="name" placeholder="Имя артиста" required>
+        <input name="country" placeholder="Страна">
+        <input name="bio" placeholder="Краткая биография">
+        <input type="file" name="photo" accept="image/*">
+        <button class="btn" type="submit">Добавить исполнителя</button>
+      </form>
+    </div>
+
+    <!-- Быстрые фильтры по странам -->
+    {% if all_countries %}
+    <div class="card">
+      <div class="quick-filters">
+        <span style="color: var(--muted); align-self: center; font-size: 0.9rem;">Быстрый выбор страны:</span>
+        
+        <a href="{{ url_for('artists_list', sort=selected_sort) }}" 
+           class="quick-filter-btn {% if not selected_country %}active{% endif %}">
+          Все страны
+        </a>
+        
+        {% for country in all_countries[:6] %}
+          <a href="{{ url_for('artists_list', country=country.country, sort=selected_sort) }}" 
+             class="quick-filter-btn {% if selected_country == country.country %}active{% endif %}">
+            {{ country.country }}
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Фильтры и сортировка -->
+    <div class="card">
+      <div class="filters-container">
+        <!-- Фильтр по стране -->
+        <div class="filter-group">
+          <label class="filter-label">Фильтр по стране</label>
+          <form method="GET" action="{{ url_for('artists_list') }}" id="country-form">
+            <select name="country" class="filter-select" onchange="document.getElementById('country-form').submit()">
+              <option value="">Все страны</option>
+              {% for country in all_countries %}
+                <option value="{{ country.country }}" 
+                        {% if selected_country == country.country %}selected{% endif %}>
+                  {{ country.country }}
+                </option>
+              {% endfor %}
+            </select>
+            <input type="hidden" name="sort" value="{{ selected_sort }}">
+          </form>
+        </div>
+
+        <!-- Сортировка -->
+        <div class="filter-group">
+          <label class="filter-label">Сортировка</label>
+          <form method="GET" action="{{ url_for('artists_list') }}" id="sort-form">
+            <select name="sort" class="filter-select" onchange="document.getElementById('sort-form').submit()">
+              <option value="name_asc" {% if selected_sort == 'name_asc' %}selected{% endif %}>
+                По имени (А → Я)
+              </option>
+              <option value="name_desc" {% if selected_sort == 'name_desc' %}selected{% endif %}>
+                По имени (Я → А)
+              </option>
+              <option value="country_asc" {% if selected_sort == 'country_asc' %}selected{% endif %}>
+                По стране (А → Я)
+              </option>
+            </select>
+            {% if selected_country %}
+              <input type="hidden" name="country" value="{{ selected_country }}">
+            {% endif %}
+          </form>
+        </div>
+
+        <!-- Кнопка сброса -->
+        {% if selected_country or selected_sort != 'name_asc' %}
+        <div class="filter-group">
+          <a href="{{ url_for('artists_list') }}" class="reset-btn">
+            ✕ Сбросить фильтры
+          </a>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Активные фильтры -->
+      {% if selected_country or selected_sort != 'name_asc' %}
+      <div class="active-filters">
+        <strong>Активные фильтры:</strong>
+        {% if selected_country %}
+          <span class="filter-badge">Страна: {{ selected_country }}</span>
+        {% endif %}
+        
+        {% if selected_sort == 'name_desc' %}
+          <span class="filter-badge">Сортировка: Я → А</span>
+        {% elif selected_sort == 'country_asc' %}
+          <span class="filter-badge">Сортировка: По стране</span>
+        {% endif %}
+        
+        <span class="results-count">Найдено артистов: {{ artists|length }}</span>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Список артистов -->
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h2 style="margin:0; font-size:1.1rem; color:#0f172a;">
+          {% if selected_country %}
+            Исполнители из {{ selected_country }}
+          {% else %}
+            Все исполнители
+          {% endif %}
+        </h2>
+        <span style="color: var(--muted); font-size: 0.9rem;">
+          Всего: {{ artists|length }}
+        </span>
+      </div>
+
+      {% if artists %}
+      <table class="artists-table" role="table" aria-label="Artists list">
+        <thead>
+          <tr>
+            <th>
+              Исполнитель
+              <span class="sort-icon">
+                {% if selected_sort == 'name_asc' %}▲{% elif selected_sort == 'name_desc' %}▼{% endif %}
+              </span>
+            </th>
+            <th>Страна</th>
+            <th style="width:260px; text-align:right;">Действия</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in artists %}
+          <tr class="artist-row">
+            <td>
+              <div style="display:flex; align-items:center;">
+                <div class="artist-photo">
+                  {% if a.photo %}
+                    {% set photo_path = 'uploads/' + a.photo %}
+                    <img src="{{ url_for('static', filename=photo_path) }}" 
+                         alt="{{ a.name }}"
+                         onerror="this.src='{{ url_for('static', filename='uploads/default.jpg') }}'">
+                  {% else %}
+                    <img src="{{ url_for('static', filename='uploads/default.jpg') }}" alt="{{ a.name }}">
+                  {% endif %}
+                </div>
+                <div>
+                  <div style="font-weight:700;">{{ a.name }}</div>
+                  {% if a.bio %}
+                    <div style="font-size:0.85rem; color:var(--muted); max-width:460px; margin-top:3px;">
+                      {{ a.bio }}
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+            </td>
+            <td>
+              {% if a.country %}
+                <span style="padding: 3px 8px; background: #f0f9ff; border-radius: 12px; font-size: 0.85rem;">
+                  {{ a.country }}
+                </span>
+              {% else %}
+                <span style="color: var(--muted);">—</span>
+              {% endif %}
+            </td>
+            <td style="text-align:right;" class="actions">
+              <a class="link" href="{{ url_for('artist_page', artist_id=a.id) }}">Открыть</a>
+
+              <form action="{{ url_for('delete_artist', artist_id=a.id) }}" method="post" style="display:inline;">
+                <button class="delete" type="submit" onclick="return confirm('Удалить артиста и все его альбомы?')">
+                  Удалить
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+        <div style="text-align: center; padding: 40px 20px;">
+          <div style="font-size: 3rem; color: #e2e8f0; margin-bottom: 10px;">🎵</div>
+          <h3 style="color: var(--muted); margin-bottom: 10px;">
+            {% if selected_country %}
+              Нет артистов из {{ selected_country }}
+            {% else %}
+              Нет артистов
+            {% endif %}
+          </h3>
+          <p style="color: var(--muted);">
+            {% if selected_country %}
+              Попробуйте выбрать другую страну или <a href="{{ url_for('artists_list') }}">сбросить фильтр</a>
+            {% else %}
+              Добавьте первого артиста с помощью формы выше
+            {% endif %}
+          </p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+  // Авто-отправка форм при выборе фильтров
+  document.addEventListener('DOMContentLoaded', function() {
+    // Сохраняем выбранные значения при обновлении страницы
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    // Добавляем иконку загрузки при отправке форм
+    const forms = document.querySelectorAll('form');
+    forms.forEach(form => {
+      form.addEventListener('submit', function() {
+        const submitBtn = this.querySelector('button[type="submit"]');
+        if (submitBtn) {
+          submitBtn.innerHTML = 'Загрузка...';
+          submitBtn.disabled = true;
+        }
+      });
+    });
+    
+    // Плавная прокрутка к фильтрам при их изменении
+    const filterSelects = document.querySelectorAll('.filter-select');
+    filterSelects.forEach(select => {
+      select.addEventListener('change', function() {
+        if (this.value) {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      });
+    });
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2>Плейлист — Любимые треки</h2>
+  {% if items %}
+    <table>
+      <tr><th>Добавлено</th><th>Трек</th><th>Альбом</th><th>Артист</th><th>Действие</th></tr>
+      {% for it in items %}
+      <tr>
+        <td>{{ it.added_at }}</td>
+        <td>{{ it.title }}</td>
+        <td>{{ it.album_title }}</td>
+        <td>{{ it.artist_name }}</td>
+        <td>
+          <form action="{{ url_for('playlist_remove', pt_id=it.pt_id) }}" method="post">
+            <button type="submit">Удалить</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+  {% else %}
+    <p>Плейлист пуст.</p>
+  {% endif %}
+{% endblock %}

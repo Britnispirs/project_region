@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="card">
+    <h3>Добавить жанр</h3>
+    <form action="{{ url_for('add_genre') }}" method="post">
+      <input name="name" placeholder="Название жанра" required>
+      <button type="submit">Добавить</button>
+    </form>
+  </div>
+
+  <h3>Список жанров</h3>
+  <table>
+    <tr><th>ID</th><th>Название</th></tr>
+    {% for g in genres %}
+    <tr><td>{{ g.id }}</td><td>{{ g.name }}</td></tr>
+    {% endfor %}
+  </table>
+{% endblock %}
